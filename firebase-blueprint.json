@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Student profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "goal": { "type": "string" },
+        "weight": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Workout": {
+      "title": "Workout Plan",
+      "description": "Customized workout plan for the student",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "division": { "type": "string" },
+        "exercises": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "sets": { "type": "integer" },
+              "reps": { "type": "string" },
+              "weight": { "type": "string" },
+              "rest": { "type": "string" },
+              "notes": { "type": "string" },
+              "completed": { "type": "boolean" },
+              "category": { "type": "string" }
+            }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      }
+    },
+    "Diet": {
+      "title": "Diet Plan",
+      "description": "Nutritional plan for the student",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "meals": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Progress": {
+      "title": "Physical Progress",
+      "description": "Measurements and photos",
+      "type": "object",
+      "properties": {
+        "weight": { "type": "number" },
+        "bodyFat": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "photos": { "type": "array" }
+      }
+    },
+    "Video": {
+      "title": "Training Video",
+      "description": "Exclusive training content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Information about students"
+    },
+    "users/{userId}/workouts/{workoutId}": {
+      "schema": "Workout",
+      "description": "Workout history and current plans"
+    },
+    "users/{userId}/diets/{dietId}": {
+      "schema": "Diet",
+      "description": "Nutritional history"
+    },
+    "users/{userId}/progress/{progressId}": {
+      "schema": "Progress",
+      "description": "Physical transformation tracking"
+    },
+    "videos/{videoId}": {
+      "schema": "Video",
+      "description": "Public or shared training videos"
+    }
+  }
+}

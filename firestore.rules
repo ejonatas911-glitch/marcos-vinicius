@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- 3. PRIMITIVE DEFINITIONS & HELPERS ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'personalvinicius@gmail.com'; }
+    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // --- 2. VALIDATION BLUEPRINTS ---
+    function isValidUser(data) {
+      return data.uid is string && 
+             data.email is string &&
+             data.displayName is string &&
+             data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
+             data.keys().size() >= 5;
+    }
+
+    function isValidWorkout(data) {
+      return data.title is string && data.title.size() <= 100 &&
+             data.exercises is list && data.exercises.size() <= 50;
+    }
+
+    // --- 4. TERMINAL STATE & RULES ---
+    
+    // User profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUser(incoming());
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'goal', 'weight', 'updatedAt', 'role']);
+
+      // Workouts subcollection
+      match /workouts/{workoutId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin() && isValidWorkout(incoming());
+      }
+
+      // Diets subcollection
+      match /diets/{dietId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      // Progress subcollection
+      match /progress/{progressId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) || isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Videos collection
+    match /videos/{videoId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
